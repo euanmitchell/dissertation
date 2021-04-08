@@ -15,4 +15,4 @@ do
 # End of the loop for each file
 done
 
-echo All done
+echo "All done"
