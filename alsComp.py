@@ -44,10 +44,13 @@ class compareGround(object):
         # Create empty array for shotnumbers
         self.alsShot=np.empty(0)
         # Create empty arrays for ALS data
-        self.alsGround=np.empty(0,dtype=float)
-        self.alsSlope=np.empty(0,dtype=float)
-        self.alsCover=np.empty(0,dtype=float)
-        # Do this with numpy.loadtxt() instead?
+        self.alsGround=np.empty(0,dtype=float)      # 'true ground'
+        self.slope=np.empty(0,dtype=float)          # 'ground slope'
+        self.alsCover=np.empty(0,dtype=float)       # 'ALS cover'
+        self.alsRH95=np.empty(0,dtype=float)        # 'rhReal 95'
+        self.overlap=np.empty(0,dtype=float)        # 'groundOverlap'
+        self.beamSens=np.empty(0,dtype=float)       # 'blairSense'
+
         with open(input, 'r') as f:
             for line in f:
                 if line[0]=='#':
@@ -58,9 +61,17 @@ class compareGround(object):
                     shot=ident[2]
                     self.alsShot=np.append(self.alsShot,shot)
                     self.alsGround=np.append(self.alsGround,data[1])
+                    self.slope=np.append(self.slope,data[3])
+                    self.alsCover=np.append(self.alsCover,data[4])
+                    self.alsRH95=np.append(self.alsRH95,data[95])
+                    self.overlap=np.append(self.overlap,data[108])
+                    self.beamSens=np.append(self.beamSens,data[112])
+
 
     def readGEDI(self,input):
         '''Read the GEDI L2A file'''
+
+        '''GET GROUND ELEVATION ARRAYS FOR EACH OF THE SIX ALGORITHMS'''
 
         print('Reading GEDI L2A file',input)
         beamlist=['BEAM0101','BEAM1000','BEAM0010','BEAM0000','BEAM0011','BEAM0110','BEAM0001','BEAM1011']
@@ -83,6 +94,11 @@ class compareGround(object):
 
         self.alsShotClean=np.empty(0)
         self.alsGroundClean=np.empty(0,dtype=float)
+        self.slopeClean=np.empty(0,dtype=float)
+        self.alsCoverClean=np.empty(0,dtype=float)
+        self.alsRH95Clean=np.empty(0,dtype=float)
+        self.overlapClean=np.empty(0,dtype=float)
+        self.beamSensClean=np.empty(0,dtype=float)
         self.gediShotClean=np.empty(0)
         self.gediGroundClean=np.empty(0,dtype=float)
 
@@ -92,20 +108,70 @@ class compareGround(object):
                 if self.alsShot[i] == self.gediShot[j]:
                     self.alsShotClean=np.append(self.alsShotClean,self.alsShot[i])
                     self.alsGroundClean=np.append(self.alsGroundClean,self.alsGround[i])
+                    self.slopeClean=np.append(self.slopeClean,self.slope[i])
+                    self.alsCoverClean=np.append(self.alsCoverClean,self.alsCover[i])
+                    self.alsRH95Clean=np.append(self.alsRH95Clean,self.alsRH95[i])
+                    self.overlapClean=np.append(self.overlapClean,self.overlap[i])
+                    self.beamSensClean=np.append(self.beamSensClean,self.beamSens[i])
                     self.gediShotClean=np.append(self.gediShotClean,self.gediShot[j])
                     self.gediGroundClean=np.append(self.gediGroundClean,self.gediGround[j])
 
-        residual=(self.gediGroundClean-self.alsGroundClean)
+        residual=np.subtract(self.gediGroundClean,self.alsGroundClean.astype(float))
 
         plt.plot(self.alsGroundClean.astype(float),self.gediGroundClean,'o')
         plt.plot((580,1100),(580,1100))
         plt.title('ALS vs GEDI Ground Elevation')
         plt.xlabel('ALS Ground Elevation (m)')
         plt.ylabel('GEDI Ground Elevation (m)')
-        #plt.savefig('name')
-        #plt.close()
-        #plt.clf()
-        plt.show()
+        plt.savefig('code/ALSvsGEDI.png')
+        plt.close()
+        plt.clf()
+        #plt.show()
+
+        plt.plot(self.slopeClean.astype(float),residual,'o')
+        #plt.plot((580,1100),(580,1100))
+        plt.title('Slope vs Residual')
+        plt.xlabel('Slope')
+        plt.ylabel('Ground Residual (m)')
+        plt.savefig('code/SlopeVsRes.png')
+        plt.close()
+        plt.clf()
+
+        plt.plot(self.alsCoverClean.astype(float),residual,'o')
+        #plt.plot((580,1100),(580,1100))
+        plt.title('Canopy Cover vs Residual')
+        plt.xlabel('Canopy Cover')
+        plt.ylabel('Ground Residual (m)')
+        plt.savefig('code/CoverVsRes.png')
+        plt.close()
+        plt.clf()
+
+        plt.plot(self.alsRH95Clean.astype(float),residual,'o')
+        #plt.plot((580,1100),(580,1100))
+        plt.title('Height vs Residual')
+        plt.xlabel('RH95 (m)')
+        plt.ylabel('Ground Residual (m)')
+        plt.savefig('code/HeightVsRes.png')
+        plt.close()
+        plt.clf()
+
+        plt.plot(self.overlapClean.astype(float),residual,'o')
+        #plt.plot((580,1100),(580,1100))
+        plt.title('Ground Overlap vs Residual')
+        plt.xlabel('Ground Overlap')
+        plt.ylabel('Ground Residual (m)')
+        plt.savefig('code/OverlapVsRes.png')
+        plt.close()
+        plt.clf()
+
+        plt.plot(self.beamSensClean.astype(float),residual,'o')
+        #plt.plot((580,1100),(580,1100))
+        plt.title('Sensitivity vs Residual')
+        plt.xlabel('Beam Sensitivity')
+        plt.ylabel('Ground Residual (m)')
+        plt.savefig('code/BeamSensVsRes.png')
+        plt.close()
+        plt.clf()
 
 #######################################
 
