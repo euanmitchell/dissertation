@@ -13,6 +13,9 @@ Code developed during work on my MSc dissertation, spring and summer 2021.
 #### gridComp.py
 * Python script to read text file output from running ```gediMetric``` over simulated waveforms and extract data from TIFFs for comparison plots.
 
+#### randomForest.py
+* First attempt to predict canopy height from Sentinel-2 image using Random Forest machine learning.
+
 #### subset.sh
 * A simple shell script to loop through a directory and execute the ```subsetGEDI.py``` program and spatially subset full orbit GEDI L1B files.
 
