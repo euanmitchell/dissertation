@@ -16,6 +16,9 @@ Code developed during work on my MSc dissertation, spring and summer 2021.
 #### randomForest.py
 * First attempt to predict canopy height from Sentinel-2 image using Random Forest machine learning.
 
+#### randomForestLaSelva.py
+* Edits to ```randomForest.py``` to apply machine learning to real GEDI data.
+
 #### subset.sh
 * A simple shell script to loop through a directory and execute the ```subsetGEDI.py``` program and spatially subset full orbit GEDI L1B files.
 
