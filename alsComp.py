@@ -8,6 +8,8 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import kde
+from sklearn.metrics import mean_squared_error
+from math import sqrt
 import argparse
 import os
 import glob
@@ -22,19 +24,27 @@ def readCommands():
     p=argparse.ArgumentParser(description=('Specify input ALS and GEDI data files and programme control'),
         formatter_class=argparse.RawTextHelpFormatter)
     p.add_argument('--als', dest='als', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/wref/l1b/pulse/metric/',
-        help=('The path to the directory containing the ALS metric files.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/wref/l1b/pulse/metric/'))
+        help=('The path to the directory containing the ALS metric files.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l1b/metric/2009/'))
     p.add_argument('--alsFile', dest='alsFile', type=str, default='',
         help=('The path to a single ALS metric file.\nDefault is not set'))
     p.add_argument('--gedi', dest='gedi', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/wref/l2a/',
-        help=('The path to the directory containing the GEDI data.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/wref/l2a/'))
+        help=('The path to the directory containing the GEDI data.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l2a/2009'))
     p.add_argument('--gediFile', dest='gediFile', type=str, default='',
         help=('The path to a single GEDI data file.\nDefault is not set'))
     p.add_argument('--beams', dest='beams', type=str, default='all',
         help=('Which beams to use: "all", "power", or "coverage".\nDefault is all'))
     p.add_argument('--outRoot', dest='outRoot', type=str, default='../data/figures/',
         help=('Output root for plots.\nDefault is "../data/figures/"'))
+    p.add_argument('--site', dest='site', type=str, default='',
+        help=('Site name for plot titles.\nDefault is not set'))
     p.add_argument('--plots', dest='plots', action='store_true', default=False,
         help=('Call the plotData() method to make comparision plots'))
+    p.add_argument('--hist', dest='hist', action='store_true', default=False,
+        help=('Make histogram plots'))
+    p.add_argument('--box', dest='box', action='store_true', default=False,
+        help=('Make box plots'))
+    p.add_argument('--dens', dest='dens', action='store_true', default=False,
+        help=('Make density plots'))
     p.add_argument('--waveforms', dest='waveforms', action='store_true', default=False,
         help=('Generate shell script to copy waveforms meeting criteria specified in file'))
     cmdargs=p.parse_args()
@@ -50,6 +60,10 @@ class compareGround(object):
 
     def readALS(self,input):
         '''Read the output text file from gediMetric'''
+
+        '''SHOULD BE ABLE TO CAT ALL THE METRIC TEXT FILES INTO ONE AND
+           READ IN WITH numpy.loadfromtxt. THAT WILL GENERATE A SINGLE
+           2D ARRAY INSTEAD OF ALL THESE SEPARATE ARRAYS.'''
 
         print('Reading ALS metric file',input)
         # Create empty array for shotnumbers
@@ -106,7 +120,6 @@ class compareGround(object):
                 self.gediSens=np.append(self.gediSens,f[beam]['sensitivity'])
                 self.gediSolar=np.append(self.gediSolar,f[beam]['solar_elevation'])
                 self.gediQual=np.append(self.gediQual,f[beam]['quality_flag'])
-                # BEAM SENSITIVITY
                 print('Data in',beam)
             except:
                 print('Empty beam',beam)
@@ -127,6 +140,7 @@ class compareGround(object):
         self.gediQualClean=np.empty(0,dtype=int)
 
         # Match each record in the ALS metric file to the corresponding L2A GEDI record
+        print('Sorting and matching arrays ....')
         for i in range(alsShotMaster.shape[0]):
             for j in range(gediShotMaster.shape[0]):
                 if alsShotMaster[i] == gediShotMaster[j]:
@@ -158,188 +172,386 @@ class compareGround(object):
         residual=np.subtract(self.gediGroundClean,self.alsGroundClean.astype(float))
 
         # Specify a subset of data to plot here with useInd?
-        #useInd=np.where((self.gediQualClean == 1))       # Default is all data, otherwise
-        useInd=np.where((self.gediQualClean == 1) & (self.gediSolarClean.astype(float) > 0.0))
+        #useInd=np.arange(self.gediGroundClean.shape[0])
+        useInd=np.where((self.alsGroundClean.astype(float) > 0) & (self.gediQualClean == 1))                  # Extra residual threshold for GRSM data
+        #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50) & (self.gediQualClean == 1))       # Default is all data, otherwise
+        #useInd=np.where((self.gediQualClean == 1) & (self.gediSolarClean.astype(float) > 0.0))
+        #print('useInd length',useInd.shape[0])
         print('useInd length',len(useInd[0]))
+
+        manualRMSE=sqrt(np.sum(residual[useInd]**2)/residual[useInd].shape[0])
+        manualBias=(np.sum(residual[useInd]))/residual[useInd].shape[0]
+        print('RMSE:',manualRMSE)
+        print('Bias:',manualBias)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        plt.plot(self.alsGroundClean[useInd].astype(float),self.gediGroundClean[useInd],'o')
-        plt.plot((200,1300),(200,1300))
-        plt.title('ALS vs GEDI Ground Elevation')
+        plt.rcParams['figure.figsize']=(8,6)
+        plt.rcParams['xtick.labelsize']=16
+        plt.rcParams['ytick.labelsize']=16
+        plt.rcParams['axes.labelsize']=18
+        plt.rcParams['axes.labelpad']=8.0
+        plt.rcParams['axes.titlesize']=20
+        #print(plt.rcParams)
+
+        plt.plot(self.alsGroundClean[useInd].astype(float),self.gediGroundClean[useInd],'o',markersize=1)
+        plt.plot((25,225),(25,225))
+        plt.title(args.site + ' ALS vs GEDI Ground Elevation')
         plt.xlabel('ALS Ground Elevation (m)')
         plt.ylabel('GEDI Ground Elevation (m)')
-        plt.xlim([200,1300])
-        plt.ylim([200,1300])
-        plt.savefig(args.outRoot+'ALSvsGEDI.png')
+        plt.xlim([25,225])
+        plt.ylim([25,225])
+        plt.savefig(args.outRoot+'ALSvsGEDI.png',dpi=300)
         plt.close()
         plt.clf()
         #plt.show()
 
-        nbins=1000
-        x=self.alsGroundClean[useInd].astype(float)
-        y=self.gediGroundClean[useInd]
-        k=kde.gaussian_kde([x,y])
-        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-        zi = k(np.vstack([xi.flatten(),yi.flatten()]))
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
-        plt.title('ALS vs GEDI Ground Elevation')
-        plt.xlabel('ALS Ground Elevation (m)')
-        plt.ylabel('GEDI Ground Elevation (m)')
-        plt.colorbar()
-        plt.savefig(args.outRoot+'ALSvsGEDIDensity.png')
-        plt.close()
-        plt.clf()
+        if args.dens:
+            nbins=1000
+            x=self.alsGroundClean[useInd].astype(float)
+            y=self.gediGroundClean[useInd]
+            k=kde.gaussian_kde([x,y])
+            xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
+            zi = k(np.vstack([xi.flatten(),yi.flatten()]))
+            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
+            plt.title(args.site + ' ALS vs GEDI Ground Elevation')
+            plt.xlabel('ALS Ground Elevation (m)')
+            plt.ylabel('GEDI Ground Elevation (m)')
+            plt.colorbar()
+            plt.savefig(args.outRoot+'ALSvsGEDIDensity.png')
+            plt.close()
+            plt.clf()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        plt.plot(self.slopeClean[useInd].astype(float),residual[useInd],'o')
+    # Slope Plots
+        plt.plot(self.slopeClean[useInd].astype(float),residual[useInd],'o',markersize=1)
         #plt.plot((580,1100),(580,1100))
-        plt.title('Slope vs Residual')
+        plt.title(args.site + ' Slope vs Residual')
         plt.xlabel('Slope')
         plt.ylabel('Ground Residual (m)')
-        plt.xlim([0,70])
-        plt.ylim([-30,60])
+        #plt.xlim([0,30])
+        #plt.ylim([-5,25])
         plt.axhline(y=0.0,color='r')
-        plt.savefig(args.outRoot+'SlopeVsRes.png')
+        plt.savefig(args.outRoot+'SlopeVsRes.png',dpi=300)
         plt.close()
         plt.clf()
 
-        nbins=1000
-        x=self.slopeClean[useInd].astype(float)
-        y=residual[useInd]
-        k=kde.gaussian_kde([x,y])
-        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-        zi = k(np.vstack([xi.flatten(),yi.flatten()]))
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
-        plt.axhline(y=0.0,color='r')
-        plt.title('Slope vs Residual')
-        plt.xlabel('Slope')
-        plt.ylabel('Ground Residual (m)')
-        plt.colorbar()
-        plt.savefig(args.outRoot+'SlopeVsResDensity.png')
-        plt.close()
-        plt.clf()
+        if args.box:
+            x1=residual[np.where((self.slopeClean[useInd].astype(float) < 10))]
+            x2=residual[np.where((self.slopeClean[useInd].astype(float) > 10) & (self.slopeClean[useInd].astype(float) < 20))]
+            x3=residual[np.where((self.slopeClean[useInd].astype(float) > 20) & (self.slopeClean[useInd].astype(float) < 30))]
+            x4=residual[np.where((self.slopeClean[useInd].astype(float) > 30) & (self.slopeClean[useInd].astype(float) < 40))]
+            #x5=residual[np.where((self.slopeClean[useInd].astype(float) > 40) & (self.slopeClean[useInd].astype(float) < 50))]
+            x5=residual[np.where((self.slopeClean[useInd].astype(float) > 40))]
+            data=[x1, x2, x3, x4, x5]
+
+            plt.boxplot(data,sym='')
+            plt.axhline(y=0.0,color='r',linestyle='--')
+            plt.title(args.site + ' Slope vs. Residual')
+            plt.ylabel('Ground Residual (m)')
+            plt.ylim([-30,40])
+            plt.xlabel('Slope (degrees)')
+            plt.xticks(np.arange(1,6,step=1),['5', '15', '25', '35', '45'])
+            plt.savefig(args.outRoot+'slopeBox.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.hist:
+            plt.hist(self.slopeClean[useInd].astype(float),bins=np.arange(0.0,70.0+5,5),color='grey',edgecolor='white',linewidth=2)
+            plt.title(args.site + ' Slope Distribution')
+            plt.ylabel('Frequency')
+            plt.xlabel('Slope (degrees)')
+            plt.savefig(args.outRoot+'slopeHist.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.dens:
+            nbins=1000
+            x=self.slopeClean[useInd].astype(float)
+            y=residual[useInd]
+            k=kde.gaussian_kde([x,y])
+            xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
+            zi = k(np.vstack([xi.flatten(),yi.flatten()]))
+            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
+            plt.axhline(y=0.0,color='r')
+            plt.title('Slope vs Residual')
+            plt.xlabel('Slope')
+            plt.ylabel('Ground Residual (m)')
+            plt.colorbar()
+            plt.savefig(args.outRoot+'SlopeVsResDensity.png')
+            plt.close()
+            plt.clf()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        plt.plot(self.alsCoverClean[useInd].astype(float),residual[useInd],'o')
+    # Cover Plots
+        plt.plot(self.alsCoverClean[useInd].astype(float),residual[useInd],'o',markersize=1)
         #plt.plot((580,1100),(580,1100))
-        plt.title('Canopy Cover vs Residual')
+        plt.title(args.site + ' Canopy Cover vs Residual')
         plt.xlabel('Canopy Cover')
         plt.ylabel('Ground Residual (m)')
-        plt.xlim([0.0,1.0])
-        plt.ylim([-30,60])
+        #plt.xlim([0.86,1.0])
+        #plt.ylim([-5,25])
         plt.axhline(y=0.0,color='r')
-        plt.savefig(args.outRoot+'CoverVsRes.png')
+        plt.savefig(args.outRoot+'CoverVsRes.png',dpi=300)
         plt.close()
         plt.clf()
 
-        nbins=1000
-        x=self.alsCoverClean[useInd].astype(float)
-        y=residual[useInd]
-        k=kde.gaussian_kde([x,y])
-        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-        zi = k(np.vstack([xi.flatten(),yi.flatten()]))
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
-        plt.axhline(y=0.0,color='r')
-        plt.title('Canopy Cover vs Residual')
-        plt.xlabel('Canopy Cover')
-        plt.ylabel('Ground Residual (m)')
-        plt.colorbar()
-        plt.savefig(args.outRoot+'CoverVsResDensity.png')
-        plt.close()
-        plt.clf()
+        if args.box:
+            x1=residual[np.where((self.alsCoverClean[useInd].astype(float) < 0.1))]
+            x2=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.1) & (self.alsCoverClean[useInd].astype(float) < 0.2))]
+            x3=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.2) & (self.alsCoverClean[useInd].astype(float) < 0.3))]
+            x4=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.3) & (self.alsCoverClean[useInd].astype(float) < 0.4))]
+            x5=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.4) & (self.alsCoverClean[useInd].astype(float) < 0.5))]
+            x6=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.5) & (self.alsCoverClean[useInd].astype(float) < 0.6))]
+            x7=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.6) & (self.alsCoverClean[useInd].astype(float) < 0.7))]
+            x8=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.7) & (self.alsCoverClean[useInd].astype(float) < 0.8))]
+            x9=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.8) & (self.alsCoverClean[useInd].astype(float) < 0.9))]
+            x10=residual[np.where((self.alsCoverClean[useInd].astype(float) > 0.9) & (self.alsCoverClean[useInd].astype(float) < 1.00))]
+            data=[x1, x2, x3, x4, x5, x6, x7, x8, x9, x10]
+
+            plt.boxplot(data,sym='')
+            plt.axhline(y=0.0,color='r',linestyle='--')
+            plt.title(args.site + ' Canopy Cover vs. Residual')
+            plt.ylabel('Ground Residual (m)')
+            plt.ylim([-30,40])
+            plt.xlabel('Canopy Cover (fraction)')
+            plt.xticks(np.arange(1,11,step=1),['0.05', '0.15', '0.25', '0.35', '0.45', '0.55', '0.65', '0.75', '0.85', '0.95'])
+            plt.savefig(args.outRoot+'coverBox.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.hist:
+            plt.hist(self.alsCoverClean[useInd].astype(float),bins=np.arange(0.0,1.0+0.05,0.05),color='grey',edgecolor='white',linewidth=2)
+            plt.title(args.site + ' Canopy Cover Distribution')
+            plt.ylabel('Frequency')
+            plt.xlabel('Canopy Cover (fraction)')
+            plt.savefig(args.outRoot+'coverHist.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.dens:
+            nbins=1000
+            x=self.alsCoverClean[useInd].astype(float)
+            y=residual[useInd]
+            k=kde.gaussian_kde([x,y])
+            xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
+            zi = k(np.vstack([xi.flatten(),yi.flatten()]))
+            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
+            plt.axhline(y=0.0,color='r')
+            plt.title(args.site + ' Canopy Cover vs Residual')
+            plt.xlabel('Canopy Cover')
+            plt.ylabel('Ground Residual (m)')
+            plt.colorbar()
+            plt.savefig(args.outRoot+'CoverVsResDensity.png')
+            plt.close()
+            plt.clf()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        plt.plot(self.alsRH95Clean[useInd].astype(float),residual[useInd],'o')
+    # Height Plots
+        plt.plot(self.alsRH95Clean[useInd].astype(float),residual[useInd],'o',markersize=1)
         #plt.plot((580,1100),(580,1100))
-        plt.title('Height vs Residual')
+        plt.title(args.site + ' Height vs Residual')
         plt.xlabel('RH95 (m)')
         plt.ylabel('Ground Residual (m)')
-        plt.xlim([0,80])
-        plt.ylim([-30,60])
+        #plt.xlim([10,50])
+        #plt.ylim([-5,25])
         plt.axhline(y=0.0,color='r')
-        plt.savefig(args.outRoot+'HeightVsRes.png')
+        plt.savefig(args.outRoot+'HeightVsRes.png',dpi=300)
         plt.close()
         plt.clf()
 
-        nbins=1000
-        x=self.alsRH95Clean[useInd].astype(float)
-        y=residual[useInd]
-        k=kde.gaussian_kde([x,y])
-        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-        zi = k(np.vstack([xi.flatten(),yi.flatten()]))
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
-        plt.axhline(y=0.0,color='r')
-        plt.title('Height vs Residual')
-        plt.xlabel('RH95 (m)')
-        plt.ylabel('Ground Residual (m)')
-        plt.colorbar()
-        plt.savefig(args.outRoot+'HeightVsResDensity.png')
-        plt.close()
-        plt.clf()
+        if args.box:
+            x1=residual[np.where((self.alsRH95Clean[useInd].astype(float) < 10))]
+            x2=residual[np.where((self.alsRH95Clean[useInd].astype(float) > 10) & (self.alsRH95Clean[useInd].astype(float) < 20))]
+            x3=residual[np.where((self.alsRH95Clean[useInd].astype(float) > 20) & (self.alsRH95Clean[useInd].astype(float) < 30))]
+            x4=residual[np.where((self.alsRH95Clean[useInd].astype(float) > 30) & (self.alsRH95Clean[useInd].astype(float) < 40))]
+            #x5=residual[np.where((self.alsRH95Clean[useInd].astype(float) > 40) & (self.alsRH95Clean[useInd].astype(float) < 50))]
+            #x6=residual[np.where((self.alsRH95Clean[useInd].astype(float) > 50) & (self.alsRH95Clean[useInd].astype(float) < 60))]
+            x5=residual[np.where((self.alsRH95Clean[useInd].astype(float) > 40))]
+            data=[x1, x2, x3, x4, x5]
+
+            plt.boxplot(data,sym='')
+            plt.axhline(y=0.0,color='r',linestyle='--')
+            plt.title(args.site + ' Canopy Height vs. Residual')
+            plt.ylabel('Ground Residual (m)')
+            plt.ylim([-30,40])
+            plt.xlabel('Canopy Height (m)')
+            plt.xticks(np.arange(1,6,step=1),['5', '15', '25', '35', '45'])
+            plt.savefig(args.outRoot+'heightBox.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.hist:
+            plt.hist(self.alsRH95Clean[useInd].astype(float),bins=np.arange(0.0,60.0+5,5),color='grey',edgecolor='white',linewidth=2)
+            plt.title(args.site + ' Canopy Height Distribution')
+            plt.ylabel('Frequency')
+            plt.xlabel('Canopy Height (m)')
+            plt.savefig(args.outRoot+'heightHist.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.dens:
+            nbins=1000
+            x=self.alsRH95Clean[useInd].astype(float)
+            y=residual[useInd]
+            k=kde.gaussian_kde([x,y])
+            xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
+            zi = k(np.vstack([xi.flatten(),yi.flatten()]))
+            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
+            plt.axhline(y=0.0,color='r')
+            plt.title(args.site + ' Height vs Residual')
+            plt.xlabel('RH95 (m)')
+            plt.ylabel('Ground Residual (m)')
+            plt.colorbar()
+            plt.savefig(args.outRoot+'HeightVsResDensity.png')
+            plt.close()
+            plt.clf()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        plt.plot(self.overlapClean[useInd].astype(float),residual[useInd],'o')
+    # Ground Overlap Plots
+        plt.plot(self.overlapClean[useInd].astype(float),residual[useInd],'o',markersize=1)
         #plt.plot((580,1100),(580,1100))
-        plt.title('Ground Overlap vs Residual')
+        plt.title(args.site + ' Ground Overlap vs Residual')
         plt.xlabel('Ground Overlap')
         plt.ylabel('Ground Residual (m)')
-        plt.xlim([0.0,1.0])
-        plt.ylim([-30,60])
+        #plt.xlim([0.2,1.0])
+        #plt.ylim([-5,25])
         plt.axhline(y=0.0,color='r')
-        plt.savefig(args.outRoot+'OverlapVsRes.png')
+        plt.savefig(args.outRoot+'OverlapVsRes.png',dpi=300)
         plt.close()
         plt.clf()
 
-        nbins=1000
-        x=self.overlapClean[useInd].astype(float)
-        y=residual[useInd]
-        k=kde.gaussian_kde([x,y])
-        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-        zi = k(np.vstack([xi.flatten(),yi.flatten()]))
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
-        plt.axhline(y=0.0,color='r')
-        plt.title('Ground Overlap vs Residual')
-        plt.xlabel('Ground Overlap')
-        plt.ylabel('Ground Residual (m)')
-        plt.colorbar()
-        plt.savefig(args.outRoot+'OverlapVsResDensity.png')
-        plt.close()
-        plt.clf()
+        if args.box:
+            x1=residual[np.where((self.overlapClean[useInd].astype(float) < 0.15))]
+            x2=residual[np.where((self.overlapClean[useInd].astype(float) > 0.15) & (self.overlapClean[useInd].astype(float) < 0.25))]
+            x3=residual[np.where((self.overlapClean[useInd].astype(float) > 0.25) & (self.overlapClean[useInd].astype(float) < 0.35))]
+            x4=residual[np.where((self.overlapClean[useInd].astype(float) > 0.35) & (self.overlapClean[useInd].astype(float) < 0.45))]
+            x5=residual[np.where((self.overlapClean[useInd].astype(float) > 0.45) & (self.overlapClean[useInd].astype(float) < 0.55))]
+            x6=residual[np.where((self.overlapClean[useInd].astype(float) > 0.55) & (self.overlapClean[useInd].astype(float) < 0.65))]
+            x7=residual[np.where((self.overlapClean[useInd].astype(float) > 0.65) & (self.overlapClean[useInd].astype(float) < 0.75))]
+            x8=residual[np.where((self.overlapClean[useInd].astype(float) > 0.75) & (self.overlapClean[useInd].astype(float) < 0.85))]
+            x9=residual[np.where((self.overlapClean[useInd].astype(float) > 0.85) & (self.overlapClean[useInd].astype(float) < 0.95))]
+            x10=residual[np.where((self.overlapClean[useInd].astype(float) > 0.95) & (self.overlapClean[useInd].astype(float) < 1.00))]
+            data=[x1, x2, x3, x4, x5, x6, x7, x8, x9, x10]
+
+            plt.boxplot(data,sym='')
+            plt.axhline(y=0.0,color='r',linestyle='--')
+            plt.title(args.site + ' Ground Overlap vs. Residual')
+            plt.ylabel('Ground Residual (m)')
+            plt.ylim([-30,40])
+            plt.xlabel('Ground Overlap')
+            plt.xticks(np.arange(1,11,step=1),['0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0'])
+            plt.savefig(args.outRoot+'overlapBox.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.hist:
+            plt.hist(self.overlapClean[useInd].astype(float),bins=np.arange(0.0,1.0+0.05,0.05),color='grey',edgecolor='white',linewidth=2)
+            plt.title(args.site + ' Ground Overlap Distribution')
+            plt.ylabel('Frequency')
+            plt.xlabel('Ground Overlap')
+            plt.savefig(args.outRoot+'overlapHist.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.dens:
+            nbins=1000
+            x=self.overlapClean[useInd].astype(float)
+            y=residual[useInd]
+            k=kde.gaussian_kde([x,y])
+            xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
+            zi = k(np.vstack([xi.flatten(),yi.flatten()]))
+            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
+            plt.axhline(y=0.0,color='r')
+            plt.title(args.site + ' Ground Overlap vs Residual')
+            plt.xlabel('Ground Overlap')
+            plt.ylabel('Ground Residual (m)')
+            plt.colorbar()
+            plt.savefig(args.outRoot+'OverlapVsResDensity.png')
+            plt.close()
+            plt.clf()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        plt.plot(self.gediSensClean[useInd],residual[useInd],'o')
+    # Beam Sensitivity Plots
+        plt.plot(self.gediSensClean[useInd],residual[useInd],'o',markersize=1)
         #plt.plot((580,1100),(580,1100))
-        plt.title('Sensitivity vs Residual')
+        plt.title(args.site + ' Sensitivity vs Residual')
         plt.xlabel('Beam Sensitivity')
         plt.ylabel('Ground Residual (m)')
-        plt.xlim([0.9,1.0])
-        plt.ylim([-30,60])
+        #plt.xlim([0.88,1.0])
+        #plt.ylim([-5,25])
         plt.axhline(y=0.0,color='r')
-        plt.savefig(args.outRoot+'BeamSensVsRes.png')
+        plt.savefig(args.outRoot+'BeamSensVsRes.png',dpi=300)
         plt.close()
         plt.clf()
 
-        nbins=1000
-        x=self.gediSensClean[useInd]
-        y=residual[useInd]
-        k=kde.gaussian_kde([x,y])
-        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-        zi = k(np.vstack([xi.flatten(),yi.flatten()]))
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
-        plt.axhline(y=0.0,color='r')
-        plt.title('Sensitivity vs Residual')
-        plt.xlabel('Beam Sensitivity')
-        plt.ylabel('Ground Residual (m)')
-        plt.colorbar()
-        plt.savefig(args.outRoot+'BeamSensVsResDensity.png')
-        plt.close()
-        plt.clf()
+        if args.box:
+            '''x1=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.90) & (self.gediSensClean[useInd].astype(float) < 0.91))]
+            x2=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.91) & (self.gediSensClean[useInd].astype(float) < 0.92))]
+            x3=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.92) & (self.gediSensClean[useInd].astype(float) < 0.93))]
+            x4=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.93) & (self.gediSensClean[useInd].astype(float) < 0.94))]
+            x5=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.94) & (self.gediSensClean[useInd].astype(float) < 0.95))]
+            x6=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.95) & (self.gediSensClean[useInd].astype(float) < 0.96))]
+            x7=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.96) & (self.gediSensClean[useInd].astype(float) < 0.97))]
+            x8=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.97) & (self.gediSensClean[useInd].astype(float) < 0.98))]
+            x9=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.98) & (self.gediSensClean[useInd].astype(float) < 0.99))]
+            x10=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.99) & (self.gediSensClean[useInd].astype(float) < 1.00))]'''
+
+            x1=residual[np.where((self.gediSensClean[useInd].astype(float) < 0.82))]
+            x2=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.82) & (self.gediSensClean[useInd].astype(float) < 0.84))]
+            x3=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.84) & (self.gediSensClean[useInd].astype(float) < 0.86))]
+            x4=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.86) & (self.gediSensClean[useInd].astype(float) < 0.88))]
+            x5=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.88) & (self.gediSensClean[useInd].astype(float) < 0.90))]
+            x6=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.90) & (self.gediSensClean[useInd].astype(float) < 0.92))]
+            x7=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.92) & (self.gediSensClean[useInd].astype(float) < 0.94))]
+            x8=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.94) & (self.gediSensClean[useInd].astype(float) < 0.96))]
+            x9=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.96) & (self.gediSensClean[useInd].astype(float) < 0.98))]
+            x10=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.98) & (self.gediSensClean[useInd].astype(float) < 1.00))]
+
+            data=[x1, x2, x3, x4, x5, x6, x7, x8, x9, x10]
+
+            plt.boxplot(data,sym='')
+            plt.axhline(y=0.0,color='r',linestyle='--')
+            plt.title(args.site + ' Beam Sensitivity vs. Residual')
+            plt.ylabel('Ground Residual (m)')
+            plt.ylim([-30,40])
+            plt.xlabel('Beam Sensitivity')
+            #plt.xticks(np.arange(1,11,step=1),['0.90', '0.91', '0.92', '0.93', '0.94', '0.95', '0.96', '0.97', '0.98', '0.99'])
+            plt.xticks(np.arange(1,11,step=1),['0.81', '0.83', '0.85', '0.87', '0.89', '0.91', '0.93', '0.95', '0.97', '0.99'])
+            plt.savefig(args.outRoot+'beamSensBox.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.hist:
+            plt.hist(self.gediSensClean[useInd].astype(float),bins=np.arange(0.7,1.0+0.01,0.01),color='grey',edgecolor='white',linewidth=2)
+            plt.title(args.site + ' Beam Sensitivity Distribution')
+            plt.ylabel('Frequency')
+            plt.xlabel('Beam Sensitivity')
+            plt.savefig(args.outRoot+'beamSensHist.png',dpi=300)
+            plt.close()
+            plt.clf()
+
+        if args.dens:
+            nbins=1000
+            x=self.gediSensClean[useInd]
+            y=residual[useInd]
+            k=kde.gaussian_kde([x,y])
+            xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
+            zi = k(np.vstack([xi.flatten(),yi.flatten()]))
+            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='auto')
+            plt.axhline(y=0.0,color='r')
+            plt.title(args.site + ' Sensitivity vs Residual')
+            plt.xlabel('Beam Sensitivity')
+            plt.ylabel('Ground Residual (m)')
+            plt.colorbar()
+            plt.savefig(args.outRoot+'BeamSensVsResDensity.png')
+            plt.close()
+            plt.clf()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -399,7 +611,7 @@ if __name__ == '__main__':
 
     test=compareGround()
     if args.als:
-        inputs='*.txt'
+        inputs='sim*.txt'
         path=os.path.join(args.als,inputs)
         fileList=glob.glob(path)
 
