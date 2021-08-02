@@ -21,6 +21,8 @@ def readCommands():
     p.add_argument('--tempCorr', dest='tempCorr', type=float, default=0.0, help=('The corrected bias for temperate forests'))
     p.add_argument('--tropBias', dest='tropBias', type=float, default='', help=('The bias for tropical forests'))
     p.add_argument('--tropCorr', dest='tropCorr', type=float, default=0.0, help=('The corrected bias for tropical forests'))
+    p.add_argument('--output', dest='output', type=str, default='',
+        help=('Output path and filename for plot.\nDefault is not set'))
     cmdargs=p.parse_args()
     return cmdargs
 
@@ -76,7 +78,7 @@ plt.xlim([5,70])
 plt.ylim([0,150])
 plt.xlabel('Mean Canopy Height (m)')
 plt.ylabel('Biomass (% of Reference Value)')
-#plt.savefig('../data/biomassBiasCorr.png',dpi=300)
-#plt.close()
-#plt.clf()
-plt.show()
+plt.savefig(args.output + '.png',dpi=300)
+plt.close()
+plt.clf()
+#plt.show()
