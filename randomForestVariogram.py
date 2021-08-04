@@ -14,7 +14,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-#import skgstat as skg
 from math import sqrt
 import scipy.stats as sps
 import osr
@@ -35,10 +34,6 @@ def readCommands():
         help=('The path to a single simulated data file.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/grid20/cov99wid0.5/metricAll.txt'))
     p.add_argument('--inTiff', dest='inTiff', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/laselva20mComposite.tif',
         help=('The path to a single tiff image.\nDefault is '))
-    p.add_argument('--tiff', dest='tiff', action='store_true', default=False,
-        help=('Read the specified tiff and make relevant plots.'))
-    p.add_argument('--simPlots', dest='simPlots', action='store_true', default=False,
-        help=('Make histogram and box plots from the simulated data.'))
     p.add_argument('--beams', dest='beams', type=str, default='all',
         help=('Which beams to use: "all", "power", or "coverage".\nDefault is all'))
     cmdargs=p.parse_args()
@@ -46,7 +41,7 @@ def readCommands():
 
 #######################################
 
-class gridMetrics():
+class RandomForest():
     '''
     A class to read output of gediRat simulations and imagery
     and make comparison plots.
@@ -193,12 +188,6 @@ class gridMetrics():
     def makeVariogram(self):
         '''Compute and plot semi-variogram of RH95 values'''
 
-        '''variogram=skg.Variogram(coordinates=self.use[::10,7:9],values=self.use[::10,6])
-        print(variogram)
-        bins,values=variogram.get_empirical()
-        plt.plot(bins,values,'o')
-        plt.show()'''
-
         plt.rcParams['figure.figsize']=(8,6)
         plt.rcParams['xtick.labelsize']=16
         plt.rcParams['ytick.labelsize']=16
@@ -238,7 +227,7 @@ class gridMetrics():
 if __name__ == '__main__':
     args=readCommands()
 
-    comp=gridMetrics()
+    comp=RandomForest()
     comp.readMetric(args.inFile)
     comp.readTiff(args.inTiff)
     comp.tiffExtract()
