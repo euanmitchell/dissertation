@@ -70,6 +70,9 @@ Other packages may be required for certain programmes. The machine learning scri
 #### gediRatLoop.py
 * Python script to write shell scripts for bulk execution of the ```gediRat``` programme to create a grid of simulated GEDI waveforms from ALS data.
 
+#### getAlgorithm.py
+* A short script to read through a GEDI L2A file and extract the number of occurrences of each algorithm setting, as well as other metrics.
+
 #### getBounds.py
 * A short script to read through a .txt file of individual ALS file bounds and extract the ultimate bounds. Can convert between different CRS too.
 
@@ -80,13 +83,25 @@ Other packages may be required for certain programmes. The machine learning scri
   * --inTiff - the path and filename of the GeoTIFF image to read in.
   * --tiff - read the file specified by *--inTiff* and make comparison plots.
   * --simPlots - make histogram and box plots from the simulated data.
-  * --OutRoot - the output root to add to figures.
+  * --outRoot - the output root to add to figures.
 * The command to read the output from the La Selva grid and compare to the La Selva NDVI raster would be:
 
   > ```$ python3 gridComp.py --inFile /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/grid20/cov99wid0.5/metricAll.txt --inTiff ../data/laselva/laselvaNDVI_20m.tif --tiff --outRoot ../data/laselvaGridFigs/```
 
+#### mapLidarSubset.py
+* Script to write a shell script to execute ```mapLidar``` and generate tiled DSM and DTM rasters from ALS data.
+
+#### myPlotComparison.py
+* Edited version of ```plotComparison.py``` to make comparison plots of GEDI and ALS-simulated waveforms.
+
 #### parseJson.py
 * Python script to read the GeoJSON files produced by the NASA LP DAAC ```GEDISubsetter.py``` script and remove unnecessary datasets.
+
+#### plotCloud.py
+* Takes .pts file output from ```lasPoints``` and generates vertical section plots.
+
+#### plottingLoop.py
+* Writes a shell script executing ```myPlotComparison.py``` for the contents of a directory.
 
 #### randomForest.py
 * First attempt to predict canopy height from Sentinel-2 image using Random Forest machine learning.
