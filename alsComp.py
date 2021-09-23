@@ -23,12 +23,12 @@ def readCommands():
     '''
     p=argparse.ArgumentParser(description=('Specify input ALS and GEDI data files and programme control'),
         formatter_class=argparse.RawTextHelpFormatter)
-    p.add_argument('--als', dest='als', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/wref/l1b/pulse/metric/',
+    p.add_argument('--als', dest='als', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l1b/metric/2009/',
         help=('The path to the directory containing the ALS metric files.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l1b/metric/2009/'))
     p.add_argument('--alsFile', dest='alsFile', type=str, default='',
         help=('The path to a single ALS metric file.\nDefault is not set'))
-    p.add_argument('--gedi', dest='gedi', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/wref/l2a/',
-        help=('The path to the directory containing the GEDI data.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l2a/2009'))
+    p.add_argument('--gedi', dest='gedi', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l2a/2009/',
+        help=('The path to the directory containing the GEDI data.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l2a/2009/'))
     p.add_argument('--gediFile', dest='gediFile', type=str, default='',
         help=('The path to a single GEDI data file.\nDefault is not set'))
     p.add_argument('--beams', dest='beams', type=str, default='all',
@@ -38,7 +38,7 @@ def readCommands():
     p.add_argument('--site', dest='site', type=str, default='',
         help=('Site name for plot titles.\nDefault is not set'))
     p.add_argument('--plots', dest='plots', action='store_true', default=False,
-        help=('Call the plotData() method to make comparision plots'))
+        help=('Call the plotData() method to make comparision scatter plots'))
     p.add_argument('--hist', dest='hist', action='store_true', default=False,
         help=('Make histogram plots'))
     p.add_argument('--box', dest='box', action='store_true', default=False,
@@ -94,8 +94,6 @@ class compareGround(object):
     def readGEDI(self,input):
         '''Read the GEDI L2A file'''
 
-        '''GET GROUND ELEVATION ARRAYS FOR EACH OF THE SIX ALGORITHMS'''
-
         print('Reading GEDI L2A file',input)
         if args.beams == 'all':
             beamlist=['BEAM0101','BEAM1000','BEAM0010','BEAM0000','BEAM0011','BEAM0110','BEAM0001','BEAM1011']
@@ -111,6 +109,14 @@ class compareGround(object):
         self.gediSens=np.empty(0,dtype=float)
         self.gediSolar=np.empty(0,dtype=float)
         self.gediQual=np.empty(0,dtype=int)
+        self.algorithm=np.empty(0,dtype=int)
+        self.ground1=np.empty(0,dtype=float)
+        self.ground2=np.empty(0,dtype=float)
+        self.ground3=np.empty(0,dtype=float)
+        self.ground4=np.empty(0,dtype=float)
+        self.ground5=np.empty(0,dtype=float)
+        self.ground6=np.empty(0,dtype=float)
+
         f=h5py.File(input,'r')
         for beam in beamlist:
             # Need to handle empty beams
@@ -120,6 +126,13 @@ class compareGround(object):
                 self.gediSens=np.append(self.gediSens,f[beam]['sensitivity'])
                 self.gediSolar=np.append(self.gediSolar,f[beam]['solar_elevation'])
                 self.gediQual=np.append(self.gediQual,f[beam]['quality_flag'])
+                self.algorithm=np.append(self.algorithm,f[beam]['selected_algorithm'])
+                self.ground1=np.append(self.ground1,f[beam]['geolocation']['elev_lowestmode_a1'])
+                self.ground2=np.append(self.ground2,f[beam]['geolocation']['elev_lowestmode_a2'])
+                self.ground3=np.append(self.ground3,f[beam]['geolocation']['elev_lowestmode_a3'])
+                self.ground4=np.append(self.ground4,f[beam]['geolocation']['elev_lowestmode_a4'])
+                self.ground5=np.append(self.ground5,f[beam]['geolocation']['elev_lowestmode_a5'])
+                self.ground6=np.append(self.ground6,f[beam]['geolocation']['elev_lowestmode_a6'])
                 print('Data in',beam)
             except:
                 print('Empty beam',beam)
@@ -138,6 +151,13 @@ class compareGround(object):
         self.gediSensClean=np.empty(0,dtype=float)
         self.gediSolarClean=np.empty(0,dtype=float)
         self.gediQualClean=np.empty(0,dtype=int)
+        self.algorithmClean=np.empty(0,dtype=int)
+        self.ground1Clean=np.empty(0,dtype=float)
+        self.ground2Clean=np.empty(0,dtype=float)
+        self.ground3Clean=np.empty(0,dtype=float)
+        self.ground4Clean=np.empty(0,dtype=float)
+        self.ground5Clean=np.empty(0,dtype=float)
+        self.ground6Clean=np.empty(0,dtype=float)
 
         # Match each record in the ALS metric file to the corresponding L2A GEDI record
         print('Sorting and matching arrays ....')
@@ -155,6 +175,13 @@ class compareGround(object):
                     self.gediSensClean=np.append(self.gediSensClean,gediSensMaster[j])
                     self.gediSolarClean=np.append(self.gediSolarClean,gediSolarMaster[j])
                     self.gediQualClean=np.append(self.gediQualClean,gediQualMaster[j])
+                    self.algorithmClean=np.append(self.algorithmClean,algorithmMaster[j])
+                    self.ground1Clean=np.append(self.ground1Clean,ground1Master[j])
+                    self.ground2Clean=np.append(self.ground2Clean,ground2Master[j])
+                    self.ground3Clean=np.append(self.ground3Clean,ground3Master[j])
+                    self.ground4Clean=np.append(self.ground4Clean,ground4Master[j])
+                    self.ground5Clean=np.append(self.ground5Clean,ground5Master[j])
+                    self.ground6Clean=np.append(self.ground6Clean,ground6Master[j])
 
         print('self.alsShotClean length',self.alsShotClean.shape[0])
         print('self.gediShotClean length',self.gediShotClean.shape[0])
@@ -170,23 +197,57 @@ class compareGround(object):
         #print('Cov95 waveforms',len(cov95[0]))
 
         residual=np.subtract(self.gediGroundClean,self.alsGroundClean.astype(float))
+        residual1=np.subtract(self.ground1Clean,self.alsGroundClean.astype(float))
+        residual2=np.subtract(self.ground2Clean,self.alsGroundClean.astype(float))
+        residual3=np.subtract(self.ground3Clean,self.alsGroundClean.astype(float))
+        residual4=np.subtract(self.ground4Clean,self.alsGroundClean.astype(float))
+        residual5=np.subtract(self.ground5Clean,self.alsGroundClean.astype(float))
+        residual6=np.subtract(self.ground6Clean,self.alsGroundClean.astype(float))
 
         # Specify a subset of data to plot here with useInd?
         #useInd=np.arange(self.gediGroundClean.shape[0])
-        useInd=np.where((self.alsGroundClean.astype(float) > 0) & (self.gediQualClean == 1))                  # Extra residual threshold for GRSM data
+        #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50))
+        #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (self.gediQualClean == 1))                  # Extra residual threshold for GRSM data
         #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50) & (self.gediQualClean == 1))       # Default is all data, otherwise
-        #useInd=np.where((self.gediQualClean == 1) & (self.gediSolarClean.astype(float) > 0.0))
+        useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50) & (self.gediSolarClean.astype(float) < 0.0) & (self.gediQualClean == 1))
         #print('useInd length',useInd.shape[0])
         print('useInd length',len(useInd[0]))
 
-        manualRMSE=sqrt(np.sum(residual[useInd]**2)/residual[useInd].shape[0])
-        manualBias=(np.sum(residual[useInd]))/residual[useInd].shape[0]
-        print('RMSE:',manualRMSE)
-        print('Bias:',manualBias)
+        preferredRMSE=sqrt(np.sum(residual[useInd]**2)/residual[useInd].shape[0])
+        preferredBias=(np.sum(residual[useInd]))/residual[useInd].shape[0]
+        '''ground1RMSE=sqrt(np.sum(residual1[useInd]**2)/residual1[useInd].shape[0])
+        ground1Bias=(np.sum(residual1[useInd]))/residual1[useInd].shape[0]
+        ground2RMSE=sqrt(np.sum(residual2[useInd]**2)/residual2[useInd].shape[0])
+        ground2Bias=(np.sum(residual2[useInd]))/residual2[useInd].shape[0]
+        ground3RMSE=sqrt(np.sum(residual3[useInd]**2)/residual3[useInd].shape[0])
+        ground3Bias=(np.sum(residual3[useInd]))/residual3[useInd].shape[0]
+        ground4RMSE=sqrt(np.sum(residual4[useInd]**2)/residual4[useInd].shape[0])
+        ground4Bias=(np.sum(residual4[useInd]))/residual4[useInd].shape[0]
+        ground5RMSE=sqrt(np.sum(residual5[useInd]**2)/residual5[useInd].shape[0])
+        ground5Bias=(np.sum(residual5[useInd]))/residual5[useInd].shape[0]
+        ground6RMSE=sqrt(np.sum(residual6[useInd]**2)/residual6[useInd].shape[0])
+        ground6Bias=(np.sum(residual6[useInd]))/residual6[useInd].shape[0]'''
+        print('RMSE:',preferredRMSE)
+        print('Bias:',preferredBias)
+        '''print('Algorithm 1 RMSE:',ground1RMSE)
+        print('Algorithm 1 Bias:',ground1Bias)
+        print('Algorithm 2 RMSE:',ground2RMSE)
+        print('Algorithm 2 Bias:',ground2Bias)
+        print('Algorithm 3 RMSE:',ground3RMSE)
+        print('Algorithm 3 Bias:',ground3Bias)
+        print('Algorithm 4 RMSE:',ground4RMSE)
+        print('Algorithm 4 Bias:',ground4Bias)
+        print('Algorithm 5 RMSE:',ground5RMSE)
+        print('Algorithm 5 Bias:',ground5Bias)
+        print('Algorithm 6 RMSE:',ground6RMSE)
+        print('Algorithm 6 Bias:',ground6Bias)
+
+        counts=np.bincount(self.algorithmClean[useInd])
+        print(counts)'''
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        plt.rcParams['figure.figsize']=(8,6)
+        '''plt.rcParams['figure.figsize']=(8,6)
         plt.rcParams['xtick.labelsize']=16
         plt.rcParams['ytick.labelsize']=16
         plt.rcParams['axes.labelsize']=18
@@ -491,7 +552,7 @@ class compareGround(object):
         plt.clf()
 
         if args.box:
-            '''x1=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.90) & (self.gediSensClean[useInd].astype(float) < 0.91))]
+            x1=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.90) & (self.gediSensClean[useInd].astype(float) < 0.91))]
             x2=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.91) & (self.gediSensClean[useInd].astype(float) < 0.92))]
             x3=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.92) & (self.gediSensClean[useInd].astype(float) < 0.93))]
             x4=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.93) & (self.gediSensClean[useInd].astype(float) < 0.94))]
@@ -500,7 +561,7 @@ class compareGround(object):
             x7=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.96) & (self.gediSensClean[useInd].astype(float) < 0.97))]
             x8=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.97) & (self.gediSensClean[useInd].astype(float) < 0.98))]
             x9=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.98) & (self.gediSensClean[useInd].astype(float) < 0.99))]
-            x10=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.99) & (self.gediSensClean[useInd].astype(float) < 1.00))]'''
+            x10=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.99) & (self.gediSensClean[useInd].astype(float) < 1.00))]
 
             x1=residual[np.where((self.gediSensClean[useInd].astype(float) < 0.82))]
             x2=residual[np.where((self.gediSensClean[useInd].astype(float) > 0.82) & (self.gediSensClean[useInd].astype(float) < 0.84))]
@@ -551,7 +612,7 @@ class compareGround(object):
             plt.colorbar()
             plt.savefig(args.outRoot+'BeamSensVsResDensity.png')
             plt.close()
-            plt.clf()
+            plt.clf()'''
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -644,6 +705,13 @@ if __name__ == '__main__':
         gediSensMaster=np.empty(0,dtype=float)
         gediSolarMaster=np.empty(0,dtype=float)
         gediQualMaster=np.empty(0,dtype=int)
+        algorithmMaster=np.empty(0,dtype=int)
+        ground1Master=np.empty(0,dtype=float)
+        ground2Master=np.empty(0,dtype=float)
+        ground3Master=np.empty(0,dtype=float)
+        ground4Master=np.empty(0,dtype=float)
+        ground5Master=np.empty(0,dtype=float)
+        ground6Master=np.empty(0,dtype=float)
 
         for file in fileList:
             test.readGEDI(file)
@@ -652,6 +720,13 @@ if __name__ == '__main__':
             gediSensMaster=np.append(gediSensMaster,test.gediSens)
             gediSolarMaster=np.append(gediSolarMaster,test.gediSolar)
             gediQualMaster=np.append(gediQualMaster,test.gediQual)
+            algorithmMaster=np.append(algorithmMaster,test.algorithm)
+            ground1Master=np.append(ground1Master,test.ground1)
+            ground2Master=np.append(ground2Master,test.ground2)
+            ground3Master=np.append(ground3Master,test.ground3)
+            ground4Master=np.append(ground4Master,test.ground4)
+            ground5Master=np.append(ground5Master,test.ground5)
+            ground6Master=np.append(ground6Master,test.ground6)
 
     else:
         test.readGEDI(args.gediFile)
