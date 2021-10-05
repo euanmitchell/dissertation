@@ -36,12 +36,15 @@ Other packages may be required for certain programmes. The machine learning scri
 ### In the main folder:
 
 #### alsComp.py
-* Main Python script to read text file output from ```gediMetric``` and GEDI L2A HDF5 files and generate ground residual comparison plots and statistics. The command line options available are:
+* Main Python script to read text file output from ```gediMetric``` and GEDI L2A HDF5 files and generate ground residual comparison plots and statistics. Once
+ALS and GEDI data arrays are sorted and matched they can be written to text files. The command line options available are:
   * --als - the path to a directory containing text file output from ```gediMetric```.
   * --alsFile - the path and filename for a single ```gediMetric``` text file.
   * --gedi - the path to a directory containing GEDI L2A data files.
   * --gediFile - the path and filename for a single GEDI L2A data file.
   * --beams - specify whether to use all GEDI beams (the default), or only the power or coverage beams with ```all```, ```power```, or ```coverage```, respectively.
+  * --alsOutput - the path and filename to which the cleaned, sorted, and stacked ALS data arrays are written by ```plotData()```.
+  * --gediOutput - the path and filename to which the cleaned, sorted, and stacked GEDI data arrays are written by ```plotData()```.
   * --outRoot - the path to the directory to save plots to.
   * --site - provide a site name for plot titles.
   * --plots - call the ```plotData()``` method to produce ALS vs. GEDI comparison scatter plots.
@@ -70,9 +73,6 @@ Other packages may be required for certain programmes. The machine learning scri
 #### gediRatLoop.py
 * Python script to write shell scripts for bulk execution of the ```gediRat``` programme to create a grid of simulated GEDI waveforms from ALS data.
 
-#### getAlgorithm.py
-* A short script to read through a GEDI L2A file and extract the number of occurrences of each algorithm setting, as well as other metrics.
-
 #### getBounds.py
 * A short script to read through a .txt file of individual ALS file bounds and extract the ultimate bounds. Can convert between different CRS too.
 
@@ -88,20 +88,8 @@ Other packages may be required for certain programmes. The machine learning scri
 
   > ```$ python3 gridComp.py --inFile /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/grid20/cov99wid0.5/metricAll.txt --inTiff ../data/laselva/laselvaNDVI_20m.tif --tiff --outRoot ../data/laselvaGridFigs/```
 
-#### mapLidarSubset.py
-* Script to write a shell script to execute ```mapLidar``` and generate tiled DSM and DTM rasters from ALS data.
-
-#### myPlotComparison.py
-* Edited version of ```plotComparison.py``` to make comparison plots of GEDI and ALS-simulated waveforms.
-
 #### parseJson.py
 * Python script to read the GeoJSON files produced by the NASA LP DAAC ```GEDISubsetter.py``` script and remove unnecessary datasets.
-
-#### plotCloud.py
-* Takes .pts file output from ```lasPoints``` and generates vertical section plots.
-
-#### plottingLoop.py
-* Writes a shell script executing ```myPlotComparison.py``` for the contents of a directory.
 
 #### randomForest.py
 * First attempt to predict canopy height from Sentinel-2 image using Random Forest machine learning.
