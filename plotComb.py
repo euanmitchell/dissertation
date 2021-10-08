@@ -176,100 +176,50 @@ class comparisonPlots(object):
 
         # Slope Plots
 
+        # Set the number of data bins
+        slo=np.arange(0,60,5)
+        increment=5
+        print('SlopeBins:',slo)
+
+        #WREF
         #useIndW=np.where((self.alsWREF[:,0] > 0) & (self.gediWREF[:,4] < 50))
         useIndW=np.where((self.alsWREF[:,0] > 0) & (self.gediWREF[:,4] < 50) & (self.gediWREF[:,3] == 1.0))
         print('WREF useInd length',len(useIndW[0]))
-
-        #WREF
-        m1W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] < 5))])
-        m2W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 5) & (self.alsWREF[useIndW,1] < 10))])
-        m3W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 10) & (self.alsWREF[useIndW,1] < 15))])
-        m4W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 15) & (self.alsWREF[useIndW,1] < 20))])
-        m5W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 20) & (self.alsWREF[useIndW,1] < 25))])
-        m6W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 25) & (self.alsWREF[useIndW,1] < 30))])
-        m7W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 30) & (self.alsWREF[useIndW,1] < 35))])
-        m8W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 35) & (self.alsWREF[useIndW,1] < 40))])
-        m9W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 40) & (self.alsWREF[useIndW,1] < 45))])
-        m10W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 45) & (self.alsWREF[useIndW,1] < 50))])
-        m11W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 50))])
-
-        s1W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] < 5))])
-        s2W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 5) & (self.alsWREF[useIndW,1] < 10))])
-        s3W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 10) & (self.alsWREF[useIndW,1] < 15))])
-        s4W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 15) & (self.alsWREF[useIndW,1] < 20))])
-        s5W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 20) & (self.alsWREF[useIndW,1] < 25))])
-        s6W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 25) & (self.alsWREF[useIndW,1] < 30))])
-        s7W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 30) & (self.alsWREF[useIndW,1] < 35))])
-        s8W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 35) & (self.alsWREF[useIndW,1] < 40))])
-        s9W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 40) & (self.alsWREF[useIndW,1] < 45))])
-        s10W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 45) & (self.alsWREF[useIndW,1] < 50))])
-        s11W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > 50))])
+        meansWREF=[]
+        stdevsWREF=[]
+        for i in slo:
+            mean=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > i) & (self.alsWREF[useIndW,1] < (i+increment)))])
+            meansWREF.append(mean)
+            stdev=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,1] > i) & (self.alsWREF[useIndW,1] < (i+increment)))])
+            stdevsWREF.append(stdev)
 
         #GRSM
         #useIndG=np.where((self.alsGRSM[:,0] > 0) & (self.gediGRSM[:,4] < 50))
         useIndG=np.where((self.alsGRSM[:,0] > 0) & (self.gediGRSM[:,4] < 50) & (self.gediGRSM[:,3] == 1.0))
         print('GRSM useInd length',len(useIndG[0]))
-
-        m1G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] < 5))])
-        m2G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 5) & (self.alsGRSM[useIndG,1] < 10))])
-        m3G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 10) & (self.alsGRSM[useIndG,1] < 15))])
-        m4G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 15) & (self.alsGRSM[useIndG,1] < 20))])
-        m5G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 20) & (self.alsGRSM[useIndG,1] < 25))])
-        m6G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 25) & (self.alsGRSM[useIndG,1] < 30))])
-        m7G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 30) & (self.alsGRSM[useIndG,1] < 35))])
-        m8G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 35) & (self.alsGRSM[useIndG,1] < 40))])
-        m9G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 40) & (self.alsGRSM[useIndG,1] < 45))])
-        m10G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 45) & (self.alsGRSM[useIndG,1] < 50))])
-        m11G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 50))])
-
-        s1G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] < 5))])
-        s2G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 5) & (self.alsGRSM[useIndG,1] < 10))])
-        s3G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 10) & (self.alsGRSM[useIndG,1] < 15))])
-        s4G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 15) & (self.alsGRSM[useIndG,1] < 20))])
-        s5G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 20) & (self.alsGRSM[useIndG,1] < 25))])
-        s6G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 25) & (self.alsGRSM[useIndG,1] < 30))])
-        s7G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 30) & (self.alsGRSM[useIndG,1] < 35))])
-        s8G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 35) & (self.alsGRSM[useIndG,1] < 40))])
-        s9G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 40) & (self.alsGRSM[useIndG,1] < 45))])
-        s10G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 45) & (self.alsGRSM[useIndG,1] < 50))])
-        s11G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > 50))])
+        meansGRSM=[]
+        stdevsGRSM=[]
+        for i in slo:
+            mean=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > i) & (self.alsGRSM[useIndG,1] < (i+increment)))])
+            meansGRSM.append(mean)
+            stdev=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,1] > i) & (self.alsGRSM[useIndG,1] < (i+increment)))])
+            stdevsGRSM.append(stdev)
 
         #LSBS
         #useIndL=np.where((self.alsLSBS[:,0] > 0) & (self.gediLSBS[:,4] < 50))
         useIndL=np.where((self.alsLSBS[:,0] > 0) & (self.gediLSBS[:,4] < 50) & (self.gediLSBS[:,3] == 1.0))
         print('LSBS useInd length',len(useIndL[0]))
+        meansLSBS=[]
+        stdevsLSBS=[]
+        for i in slo:
+            mean=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > i) & (self.alsLSBS[useIndL,1] < (i+increment)))])
+            meansLSBS.append(mean)
+            stdev=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > i) & (self.alsLSBS[useIndL,1] < (i+increment)))])
+            stdevsLSBS.append(stdev)
 
-        m1L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] < 5))])
-        m2L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 5) & (self.alsLSBS[useIndL,1] < 10))])
-        m3L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 10) & (self.alsLSBS[useIndL,1] < 15))])
-        m4L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 15) & (self.alsLSBS[useIndL,1] < 20))])
-        m5L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 20) & (self.alsLSBS[useIndL,1] < 25))])
-        m6L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 25) & (self.alsLSBS[useIndL,1] < 30))])
-        m7L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 30) & (self.alsLSBS[useIndL,1] < 35))])
-        m8L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 35) & (self.alsLSBS[useIndL,1] < 40))])
-        m9L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 40) & (self.alsLSBS[useIndL,1] < 45))])
-        m10L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 45) & (self.alsLSBS[useIndL,1] < 50))])
-        m11L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 50))])
-
-        s1L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] < 5))])
-        s2L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 5) & (self.alsLSBS[useIndL,1] < 10))])
-        s3L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 10) & (self.alsLSBS[useIndL,1] < 15))])
-        s4L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 15) & (self.alsLSBS[useIndL,1] < 20))])
-        s5L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 20) & (self.alsLSBS[useIndL,1] < 25))])
-        s6L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 25) & (self.alsLSBS[useIndL,1] < 30))])
-        s7L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 30) & (self.alsLSBS[useIndL,1] < 35))])
-        s8L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 35) & (self.alsLSBS[useIndL,1] < 40))])
-        s9L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 40) & (self.alsLSBS[useIndL,1] < 45))])
-        s10L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 45) & (self.alsLSBS[useIndL,1] < 50))])
-        s11L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,1] > 50))])
-
-        slopes=np.array([2.5,7.5,12.5,17.5,22.5,27.5,32.5,37.5,42.5,47.5,52.5])
-        meansWREF=[m1W,m2W,m3W,m4W,m5W,m6W,m7W,m8W,m9W,m10W,m11W]
-        stdevsWREF=[s1W,s2W,s3W,s4W,s5W,s6W,s7W,s8W,s9W,s10W,s11W]
-        meansGRSM=[m1G,m2G,m3G,m4G,m5G,m6G,m7G,m8G,m9G,m10G,m11G]
-        stdevsGRSM=[s1G,s2G,s3G,s4G,s5G,s6G,s7G,s8G,s9G,s10G,s11G]
-        meansLSBS=[m1L,m2L,m3L,m4L,m5L,m6L,m7L,m8L,m9L,m10L,m11L]
-        stdevsLSBS=[s1L,s2L,s3L,s4L,s5L,s6L,s7L,s8L,s9L,s10L,s11L]
+        # Set the x-axis plot tick locations
+        slopes=np.arange(2.5,62,5)
+        print('Slope Ticks:',slopes)
 
         #plt.plot(self.alsWREF[:,1],self.gediWREF[:,4],'o',markersize=1)
         plt.plot(slopes,meansWREF,label='WREF')
@@ -282,7 +232,7 @@ class comparisonPlots(object):
         plt.ylabel('Ground Residual (m)')
         plt.ylim([-20,30])
         plt.xlabel('Slope (degrees)')
-        plt.xlim([0,55])
+        plt.xlim([0,60])
         plt.legend(loc='upper left')
         #plt.savefig(args.outRoot+'slopeResQual.png',dpi=300)
         #plt.close()
@@ -294,106 +244,50 @@ class comparisonPlots(object):
 
         # Cover Plots
 
-        covs=np.arange(0,1.0,0.1)
+        # Set the number of data bins
+        covs=np.arange(0,1.0,0.05)
+        increment=0.05
+        print('CoverBins:',covs)
 
         #WREF
         #useIndW=np.where((self.alsWREF[:,0] > 0) & (self.gediWREF[:,4] < 50))
         useIndW=np.where((self.alsWREF[:,0] > 0) & (self.gediWREF[:,4] < 50) & (self.gediWREF[:,3] == 1.0))
         print('WREF useInd length',len(useIndW[0]))
-
         meansWREF=[]
-        for i in covs:
-            mean=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > i) & (self.alsWREF[useIndW,2] < (i+0.1)))])
-            meansWREF.append(mean)
-            print(i,i+0.1)
         stdevsWREF=[]
         for i in covs:
-            stdev=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > i) & (self.alsWREF[useIndW,2] < (i+0.1)))])
+            mean=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > i) & (self.alsWREF[useIndW,2] < (i+increment)))])
+            meansWREF.append(mean)
+            stdev=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > i) & (self.alsWREF[useIndW,2] < (i+increment)))])
             stdevsWREF.append(stdev)
-
-        '''m1W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] < 0.1))])
-        m2W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.1) & (self.alsWREF[useIndW,2] < 0.2))])
-        m3W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.2) & (self.alsWREF[useIndW,2] < 0.3))])
-        m4W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.3) & (self.alsWREF[useIndW,2] < 0.4))])
-        m5W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.4) & (self.alsWREF[useIndW,2] < 0.5))])
-        m6W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.5) & (self.alsWREF[useIndW,2] < 0.6))])
-        m7W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.6) & (self.alsWREF[useIndW,2] < 0.7))])
-        m8W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.7) & (self.alsWREF[useIndW,2] < 0.8))])
-        m9W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.8) & (self.alsWREF[useIndW,2] < 0.9))])
-        m10W=np.mean(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.9))])'''
-
-        s1W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] < 0.1))])
-        s2W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.1) & (self.alsWREF[useIndW,2] < 0.2))])
-        s3W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.2) & (self.alsWREF[useIndW,2] < 0.3))])
-        s4W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.3) & (self.alsWREF[useIndW,2] < 0.4))])
-        s5W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.4) & (self.alsWREF[useIndW,2] < 0.5))])
-        s6W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.5) & (self.alsWREF[useIndW,2] < 0.6))])
-        s7W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.6) & (self.alsWREF[useIndW,2] < 0.7))])
-        s8W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.7) & (self.alsWREF[useIndW,2] < 0.8))])
-        s9W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.8) & (self.alsWREF[useIndW,2] < 0.9))])
-        s10W=np.std(self.gediWREF[useIndW,4][np.where((self.alsWREF[useIndW,2] > 0.9))])
 
         #GRSM
         #useIndG=np.where((self.alsGRSM[:,0] > 0) & (self.gediGRSM[:,4] < 50))
         useIndG=np.where((self.alsGRSM[:,0] > 0) & (self.gediGRSM[:,4] < 50) & (self.gediGRSM[:,3] == 1.0))
         print('GRSM useInd length',len(useIndG[0]))
-
-        m1G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] < 0.1))])
-        m2G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.1) & (self.alsGRSM[useIndG,2] < 0.2))])
-        m3G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.2) & (self.alsGRSM[useIndG,2] < 0.3))])
-        m4G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.3) & (self.alsGRSM[useIndG,2] < 0.4))])
-        m5G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.4) & (self.alsGRSM[useIndG,2] < 0.5))])
-        m6G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.5) & (self.alsGRSM[useIndG,2] < 0.6))])
-        m7G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.6) & (self.alsGRSM[useIndG,2] < 0.7))])
-        m8G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.7) & (self.alsGRSM[useIndG,2] < 0.8))])
-        m9G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.8) & (self.alsGRSM[useIndG,2] < 0.9))])
-        m10G=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.9))])
-
-        s1G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] < 0.1))])
-        s2G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.1) & (self.alsGRSM[useIndG,2] < 0.2))])
-        s3G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.2) & (self.alsGRSM[useIndG,2] < 0.3))])
-        s4G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.3) & (self.alsGRSM[useIndG,2] < 0.4))])
-        s5G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.4) & (self.alsGRSM[useIndG,2] < 0.5))])
-        s6G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.5) & (self.alsGRSM[useIndG,2] < 0.6))])
-        s7G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.6) & (self.alsGRSM[useIndG,2] < 0.7))])
-        s8G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.7) & (self.alsGRSM[useIndG,2] < 0.8))])
-        s9G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.8) & (self.alsGRSM[useIndG,2] < 0.9))])
-        s10G=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > 0.9))])
+        meansGRSM=[]
+        stdevsGRSM=[]
+        for i in covs:
+            mean=np.mean(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > i) & (self.alsGRSM[useIndG,2] < (i+increment)))])
+            meansGRSM.append(mean)
+            stdev=np.std(self.gediGRSM[useIndG,4][np.where((self.alsGRSM[useIndG,2] > i) & (self.alsGRSM[useIndG,2] < (i+increment)))])
+            stdevsGRSM.append(stdev)
 
         #LSBS
         #useIndL=np.where((self.alsLSBS[:,0] > 0) & (self.gediLSBS[:,4] < 50))
         useIndL=np.where((self.alsLSBS[:,0] > 0) & (self.gediLSBS[:,4] < 50) & (self.gediLSBS[:,3] == 1.0))
         print('LSBS useInd length',len(useIndL[0]))
+        meansLSBS=[]
+        stdevsLSBS=[]
+        for i in covs:
+            mean=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > i) & (self.alsLSBS[useIndL,2] < (i+increment)))])
+            meansLSBS.append(mean)
+            stdev=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > i) & (self.alsLSBS[useIndL,2] < (i+increment)))])
+            stdevsLSBS.append(stdev)
 
-        m1L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] < 0.1))])
-        m2L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.1) & (self.alsLSBS[useIndL,2] < 0.2))])
-        m3L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.2) & (self.alsLSBS[useIndL,2] < 0.3))])
-        m4L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.3) & (self.alsLSBS[useIndL,2] < 0.4))])
-        m5L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.4) & (self.alsLSBS[useIndL,2] < 0.5))])
-        m6L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.5) & (self.alsLSBS[useIndL,2] < 0.6))])
-        m7L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.6) & (self.alsLSBS[useIndL,2] < 0.7))])
-        m8L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.7) & (self.alsLSBS[useIndL,2] < 0.8))])
-        m9L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.8) & (self.alsLSBS[useIndL,2] < 0.9))])
-        m10L=np.mean(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.9))])
-
-        s1L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] < 0.1))])
-        s2L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.1) & (self.alsLSBS[useIndL,2] < 0.2))])
-        s3L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.2) & (self.alsLSBS[useIndL,2] < 0.3))])
-        s4L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.3) & (self.alsLSBS[useIndL,2] < 0.4))])
-        s5L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.4) & (self.alsLSBS[useIndL,2] < 0.5))])
-        s6L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.5) & (self.alsLSBS[useIndL,2] < 0.6))])
-        s7L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.6) & (self.alsLSBS[useIndL,2] < 0.7))])
-        s8L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.7) & (self.alsLSBS[useIndL,2] < 0.8))])
-        s9L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.8) & (self.alsLSBS[useIndL,2] < 0.9))])
-        s10L=np.std(self.gediLSBS[useIndL,4][np.where((self.alsLSBS[useIndL,2] > 0.9))])
-
-        covers=np.array([0.05,0.15,0.25,0.35,0.45,0.55,0.65,0.75,0.85,0.95])
-        #meansWREF=[m1W,m2W,m3W,m4W,m5W,m6W,m7W,m8W,m9W,m10W]
-        #stdevsWREF=[s1W,s2W,s3W,s4W,s5W,s6W,s7W,s8W,s9W,s10W]
-        meansGRSM=[m1G,m2G,m3G,m4G,m5G,m6G,m7G,m8G,m9G,m10G]
-        stdevsGRSM=[s1G,s2G,s3G,s4G,s5G,s6G,s7G,s8G,s9G,s10G]
-        meansLSBS=[m1L,m2L,m3L,m4L,m5L,m6L,m7L,m8L,m9L,m10L]
-        stdevsLSBS=[s1L,s2L,s3L,s4L,s5L,s6L,s7L,s8L,s9L,s10L]
+        # Set the x-axis plot tick locations
+        covers=np.arange(0.025,1.025,0.05)
+        print('Cover Ticks:',covers)
 
         #plt.plot(self.alsWREF[:,2],self.gediWREF[:,4],'o',markersize=1)
         plt.plot(covers,meansWREF,label='WREF')
@@ -413,19 +307,6 @@ class comparisonPlots(object):
         #plt.clf()
         #print('Cover plot written to file '+args.outRoot+'coverResQual.png')
         plt.show()
-
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        # Moving average solution do this for covers?
-        '''def movingAvg(x,n):
-            cumsum=np.cumsum(np.insert(x,0,0))
-            return (cumsum[n:] - cumsum[:-n])/float(n)
-
-        wrefSorted=self.alsWREF[self.alsWREF[:,2].argsort()]
-        n=50
-        WREF=movingAvg(wrefSorted[:,4],n)
-        plt.plot(wrefSorted[49:,2],WREF)
-        plt.show()'''
 
 #######################################
 
