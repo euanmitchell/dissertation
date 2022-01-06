@@ -72,6 +72,9 @@ Other packages may be required for certain programmes. The machine learning scri
 #### gediRatLoop.py
 * Python script to write shell scripts for bulk execution of the ```gediRat``` programme to create a grid of simulated GEDI waveforms from ALS data.
 
+#### getAlgorithm.py
+* A script to read through a directory of GEDI .h5 files and return various stats.
+
 #### getBounds.py
 * A short script to read through a .txt file of individual ALS file bounds and extract the ultimate bounds. Can convert between different CRS too.
 
@@ -87,11 +90,23 @@ Other packages may be required for certain programmes. The machine learning scri
 
   > ```$ python3 gridComp.py --inFile /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/grid20/cov99wid0.5/metricAll.txt --inTiff ../data/laselva/laselvaNDVI_20m.tif --tiff --outRoot ../data/laselvaGridFigs/```
 
+#### mapLidarSubset.py
+* Generates a shell script to exeucte *gediSimulator* ```mapLidar``` program to generate DSM and DTM tiff tiles from ALS data.
+
+#### myPlotComparison.py
+* Edited version of *gediSimulator* ```plotWaveComparison.py``` file to add real GEDI L2A data to plots.
+
 #### parseJson.py
 * Python script to read the GeoJSON files produced by the NASA LP DAAC ```GEDISubsetter.py``` script and remove unnecessary datasets.
 
+#### plotCloud.py
+* Generates cross-sectional plots of ground and canopy ALS points from the *.pts* file ouput of *gediSimulator* ```lasPoints``` program.
+
 #### plotComb.py
 * Reads the data files of sorted arrays output by ```alsComp.py``` and makes various combined plots.
+
+#### plottingLoop.py
+* Generates a shell script calling ```myPlotComparison.py``` for each file in a directory.
 
 #### randomForest.py
 * First attempt to predict canopy height from Sentinel-2 image using Random Forest machine learning.
