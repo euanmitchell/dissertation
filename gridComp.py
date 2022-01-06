@@ -28,12 +28,14 @@ def readCommands():
         help=('The path to the directory containing the metric data.\nDefault is not set'))
     p.add_argument('--inFile', dest='inFile', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/grid20/cov99wid0.5/metricAll.txt',
         help=('The path to a single simulated data file.\nDefault is not set'))
-    p.add_argument('--inTiff', dest='inTiff', type=str, default='../data/laselva/Potapov_SAM.tif',
+    p.add_argument('--inTiff', dest='inTiff', type=str, default='../data/laselva/laselvaNDVI_20m.tif',
         help=('The path to a single tiff image.\nDefault is '))
     p.add_argument('--tiff', dest='tiff', action='store_true', default=False,
         help=('Read the specified tiff and make relevant plots.'))
     p.add_argument('--simPlots', dest='simPlots', action='store_true', default=False,
         help=('Make histogram and box plots from the simulated data.'))
+    p.add_argument('--outRoot', dest='outRoot', type=str, default='../data/figures/',
+        help=('Output root for plots.\nDefault is "../data/figures/"'))
     cmdargs=p.parse_args()
     return cmdargs
 
@@ -120,7 +122,7 @@ class gridMetrics():
             plt.title('Canopy Cover Distribution')
             plt.ylabel('Frequency')
             plt.xlabel('ALS Canopy Cover')
-            plt.savefig('../data/gridFigs/cov98wid05.coverHist.png')
+            plt.savefig(args.outRoot + 'cov98wid05.coverHist.png')
             plt.close()
             plt.clf()
             #plt.show()
@@ -129,7 +131,7 @@ class gridMetrics():
             plt.title('Ground Residual Distribution')
             plt.ylabel('Frequency')
             plt.xlabel('Ground Residual (m)')
-            plt.savefig('../data/gridFigs/cov98wid05.resHist.png')
+            plt.savefig(args.outRoot + 'cov98wid05.resHist.png')
             plt.close()
             plt.clf()
             #plt.show()
@@ -153,7 +155,7 @@ class gridMetrics():
             plt.ylim([-15,15])
             plt.xlabel('ALS Canopy Cover')
             plt.xticks(np.arange(1,11,step=1),['0.05', '0.15', '0.25', '0.35', '0.45', '0.55', '0.65', '0.75', '0.85', '0.95'])
-            plt.savefig('../data/gridFigs/cov98wid05.box.png')
+            plt.savefig(args.outRoot + 'cov98wid05.box.png')
             plt.close()
             plt.clf()
             #plt.show()
@@ -165,7 +167,7 @@ class gridMetrics():
             plt.ylabel('Ground Residual (m)')
             #plt.xlim([200,1300])
             plt.ylim([-30,30])
-            plt.savefig('../data/gridFigs/cov98wid05.scat.png')
+            plt.savefig(args.outRoot + 'cov98wid05.scat.png')
             plt.close()
             plt.clf()
             #plt.show()
@@ -181,7 +183,7 @@ class gridMetrics():
             plt.xlabel('ALS ALS Cover')
             plt.ylabel('Ground Residual (m)')
             plt.colorbar()
-            plt.savefig('../data/wrefGridFigs/cov99wid05.dens.png')
+            plt.savefig(args.outRoot + 'cov99wid05.dens.png')
             plt.close()
             plt.clf()
             #plt.show()'''
@@ -193,11 +195,11 @@ class gridMetrics():
         print(self.tiffExtract.shape[0])
 
         for i in range(self.use.shape[0]):  #self.use.shape[0]
-            #tempLon=self.use[i,7]
-            tempLon=self.lons[i]
+            tempLon=self.use[i,7]
+            #tempLon=self.lons[i]
             #tempLon=-84.011111
-            #tempLat=self.use[i,8]
-            tempLat=self.lats[i]
+            tempLat=self.use[i,8]
+            #tempLat=self.lats[i]
             #tempLat=10.430643
             #print('First footprint lon',tempLon)
             #print('First footprint lat',tempLat)
@@ -222,16 +224,16 @@ class gridMetrics():
             #print('First footprint NDVI values',self.tiffData[yInd-1:yInd+1,xInd-1:xInd+1])
             #print('First footprint cover value',self.use[i,2])
 
-        '''plt.plot(self.use[:,2],self.tiffExtract,'o',markersize=1)
-        plt.title('ALS Cover vs. Footprint NDWI')
-        plt.xlabel('ALS Cover')
-        plt.ylabel('Footprint Band 11 NDWI')
-        #plt.savefig('../data/grid20Figs/ndwi_11CoverMean5x5.png')
+        plt.plot(self.use[:,6],self.tiffExtract,'o',markersize=1)
+        plt.title('ALS Height vs. Footprint NDVI')
+        plt.xlabel('ALS RH95 (m)')
+        plt.ylabel('Footprint NDVI')
+        #plt.savefig(args.outRoot + 'ndwi_11CoverMean5x5.png')
         #plt.close()
         #plt.clf()
-        #plt.show()
+        plt.show()
 
-        x1=self.tiffExtract[np.where((self.use[:,2] < 0.1))]
+        '''x1=self.tiffExtract[np.where((self.use[:,2] < 0.1))]
         x2=self.tiffExtract[np.where((self.use[:,2] > 0.1) & (self.use[:,2] < 0.2))]
         x3=self.tiffExtract[np.where((self.use[:,2] > 0.2) & (self.use[:,2] < 0.3))]
         x4=self.tiffExtract[np.where((self.use[:,2] > 0.3) & (self.use[:,2] < 0.4))]
@@ -249,10 +251,10 @@ class gridMetrics():
         plt.ylabel('Footprint Band 11 NDWI')
         plt.ylim([-1,1])
         plt.xticks(np.arange(1,11,step=1),['0.05', '0.15', '0.25', '0.35', '0.45', '0.55', '0.65', '0.75', '0.85', '0.95'])
-        plt.savefig('../data/grid20Figs/ndwi_11CoverBoxMean5x5.png')
+        plt.savefig(args.outRoot + 'ndwi_11CoverBoxMean5x5.png')
         plt.close()
         plt.clf()
-        #plt.show()'''
+        #plt.show()
 
         plt.plot(self.use[:,6],self.tiffExtract,'o',markersize=1)
         plt.plot([-2,60], [-2,60],ls='--',color='r')
@@ -261,12 +263,12 @@ class gridMetrics():
         plt.ylabel('Potapov Forest Height (m)')
         plt.xlim([-2,60])
         plt.ylim([-2,60])
-        plt.savefig('../data/laselvaFigures/PotapovComp1z.png')
+        plt.savefig(args.outRoot + 'PotapovComp1z.png')
         plt.close()
         plt.clf()
         #plt.show()
 
-        '''x1=self.tiffExtract[np.where((self.use[:,6] < 5))]
+        x1=self.tiffExtract[np.where((self.use[:,6] < 5))]
         x2=self.tiffExtract[np.where((self.use[:,6] > 5) & (self.use[:,6] < 10))]
         x3=self.tiffExtract[np.where((self.use[:,6] > 10) & (self.use[:,6] < 15))]
         x4=self.tiffExtract[np.where((self.use[:,6] > 15) & (self.use[:,6] < 20))]
@@ -286,7 +288,7 @@ class gridMetrics():
         plt.ylim([-1,1])
         plt.xlabel('ALS RH95 (m)')
         plt.xticks(np.arange(1,13,step=1),['2.5', '7.5', '12.5', '17.5', '22.5', '27.5', '32.5', '37.5', '42.5', '47.5', '52.5', '57.5'])
-        plt.savefig('../data/grid20Figs/ndwi_11HeightBoxMean5x5.png')
+        plt.savefig(args.outRoot + 'ndwi_11HeightBoxMean5x5.png')
         plt.close()
         plt.clf()
         #plt.show()'''
@@ -302,7 +304,7 @@ class gridMetrics():
         plt.xlabel('ALS Slope')
         plt.ylabel('Footprint SRTM Slope')
         plt.colorbar()
-        plt.savefig('../data/wrefGridFigs/slopeCoverDens.png')
+        plt.savefig(args.outRoot + 'slopeCoverDens.png')
         plt.close()
         plt.clf()
         #plt.show()'''

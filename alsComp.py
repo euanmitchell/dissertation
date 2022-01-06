@@ -23,16 +23,18 @@ def readCommands():
     '''
     p=argparse.ArgumentParser(description=('Specify input ALS and GEDI data files and programme control'),
         formatter_class=argparse.RawTextHelpFormatter)
-    p.add_argument('--als', dest='als', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/grsm/l1b/metric/',
+    p.add_argument('--als', dest='als', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l1b/metric/2009/',
         help=('The path to the directory containing the ALS metric files.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l1b/metric/2009/'))
     p.add_argument('--alsFile', dest='alsFile', type=str, default='',
         help=('The path to a single ALS metric file.\nDefault is not set'))
-    p.add_argument('--gedi', dest='gedi', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/grsm/l2a/',
+    p.add_argument('--gedi', dest='gedi', type=str, default='/exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l2a/2009/',
         help=('The path to the directory containing the GEDI data.\nDefault is /exports/csce/datastore/geos/groups/MSCGIS/s2129010/data/laselva/l2a/2009/'))
     p.add_argument('--gediFile', dest='gediFile', type=str, default='',
         help=('The path to a single GEDI data file.\nDefault is not set'))
     p.add_argument('--beams', dest='beams', type=str, default='all',
         help=('Which beams to use: "all", "power", or "coverage".\nDefault is all'))
+    p.add_argument('--write', dest='write', action='store_true', default=False,
+        help=('Write sorted arrays to text files'))
     p.add_argument('--alsOutput', dest='alsOutput', type=str, default='alsData.txt',
         help=('Filename and path to write the sorted ALS data to.\nDefault is alsData.txt'))
     p.add_argument('--gediOutput', dest='gediOutput', type=str, default='gediData.txt',
@@ -208,22 +210,25 @@ class compareGround(object):
         residual5=np.subtract(self.ground5Clean,self.alsGroundClean.astype(float))
         residual6=np.subtract(self.ground6Clean,self.alsGroundClean.astype(float))
 
-        # Specify a subset of data to plot here with useInd?
+        # Specify a subset of data
         #useInd=np.arange(self.gediGroundClean.shape[0])
-        #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50))
-        #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (self.gediQualClean == 1))                  # Extra residual threshold for GRSM data
+        #useInd=np.where((self.alsGroundClean.astype(float) > -1000000))
+        useInd=np.where((self.gediQualClean == 1))
+        #useInd=np.where((self.gediSolarClean.astype(float) > 0.0))
+        #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50))                                    # Extra residual threshold for GRSM data
         #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50) & (self.gediQualClean == 1))       # Default is all data, otherwise
-        useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50) & (self.gediSolarClean.astype(float) < 0.0) & (self.gediQualClean == 1))
+        #useInd=np.where((self.alsGroundClean.astype(float) > 0) & (residual < 50) & (self.gediSolarClean.astype(float) > 0.0) & (self.gediQualClean == 1))
         #print('useInd length',useInd.shape[0])
         print('useInd length',len(useInd[0]))
 
         #Combine and write arrays to file
-        alsData=np.stack((self.alsGroundClean.astype(float),self.slopeClean.astype(float),self.alsCoverClean.astype(float),self.alsRH95Clean.astype(float)),axis=1)
-        np.savetxt(args.alsOutput,alsData,header='Ground Slope Cover RH95')
-        print('ALS data written to file',args.alsOutput)
-        gediData=np.stack((self.gediGroundClean,self.gediSensClean,self.gediSolarClean,self.gediQualClean,residual),axis=1)
-        np.savetxt(args.gediOutput,gediData,header='Ground Beam_Sensitivity Solar_Angle Quality_Flag Residual')
-        print('GEDI data written to file',args.gediOutput)
+        if args.write:
+            alsData=np.stack((self.alsGroundClean.astype(float),self.slopeClean.astype(float),self.alsCoverClean.astype(float),self.alsRH95Clean.astype(float)),axis=1)
+            np.savetxt(args.alsOutput,alsData,header='Ground Slope Cover RH95')
+            print('ALS data written to file',args.alsOutput)
+            gediData=np.stack((self.gediGroundClean,self.gediSensClean,self.gediSolarClean,self.gediQualClean,residual),axis=1)
+            np.savetxt(args.gediOutput,gediData,header='Ground Beam_Sensitivity Solar_Angle Quality_Flag Residual')
+            print('GEDI data written to file',args.gediOutput)
 
         preferredRMSE=sqrt(np.sum(residual[useInd]**2)/residual[useInd].shape[0])
         preferredBias=(np.sum(residual[useInd]))/residual[useInd].shape[0]
@@ -256,6 +261,9 @@ class compareGround(object):
 
         counts=np.bincount(self.algorithmClean[useInd])
         print(counts)'''
+
+        meanSens=np.mean(self.gediSensClean[useInd])
+        print('Mean beam sensitivity',meanSens)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

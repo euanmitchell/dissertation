@@ -155,6 +155,8 @@ class gridMetrics():
         regressor.fit(x_train,y_train)
         y_pred=regressor.predict(x_test)
         print('Random Forest coefficient',regressor.score(x_train,y_train))
+        print('RF Feature Importance',regressor.feature_importances_)
+        print('RF Parameters',regressor.get_params)
 
         plt.plot(y_test,y_pred,'o',markersize=1)
         plt.plot([0,60], [0,60],ls='--',color='r')
@@ -163,14 +165,14 @@ class gridMetrics():
         plt.title('Random Forest Height Prediction')
         plt.xlabel('ALS RH95 (m)')
         plt.ylabel('RF Predicted Height (m)')
-        plt.savefig('../data/laselvaFigures/randomForest1.png')
+        plt.savefig('../data/laselvaFigures/randomForestTestHiRes.png',dpi=300)
         plt.close()
         plt.clf()
         #plt.show()
 
         # Independently fit a linear regression to the RF output
-        slope,intercept,r,p,se = sps.linregress(y_test,y_pred)
-        print('Slope: {}, intercept: {}, r: {}, p: {}, std_err: {}'.format(slope,intercept,r,p,se))
+        '''slope,intercept,r,p,se = sps.linregress(y_test,y_pred)
+        print('Slope: {}, intercept: {}, r: {}, p: {}, std_err: {}'.format(slope,intercept,r,p,se))'''
 
 #######################################
 

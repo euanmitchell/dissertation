@@ -290,7 +290,7 @@ class RandomForest():
 
         # Apply a quality_flag = 1 mask to the training data and define test data as the other data
         self.train=np.where((self.gediExtract[:,2]==1.0))
-        #self.test=np.where((self.gediExtract[:,2]==0.0))
+        self.test=np.where((self.gediExtract[:,2]==0.0))
 
         # Split into train and test datasets based on location instead
         #self.train=np.where(((self.use[:,8])<((self.use[:,7]*1.389)+6500)))
@@ -309,17 +309,17 @@ class RandomForest():
         #plt.clf()
         plt.show()'''
 
-        x=self.tiffExtract[self.train[0],:]
-        y=self.gediExtract[self.train[0],1]
-        x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.5,random_state=0)
+        #x=self.tiffExtract[self.train[0],:]
+        #y=self.gediExtract[self.train[0],1]
+        #x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.5,random_state=0)
 
         # Independent variables are Sentinel reflectances and indices
-        #x_train=self.tiffExtract[self.train[0],:]
-        #x_test=self.tiffExtract[self.test[0],:]
+        x_train=self.tiffExtract[self.train[0],:]
+        x_test=self.tiffExtract[self.test[0],:]
         print('Shape of x',x_train.shape)
         # Dependent variable is GEDI RH95
-        #y_train=self.gediExtract[self.train[0],1]
-        #y_test=self.gediExtract[self.test[0],1]
+        y_train=self.gediExtract[self.train[0],1]
+        y_test=self.gediExtract[self.test[0],1]
         print('Shape of y',y_train.shape)
 
         #for i in range(1,21):
@@ -613,8 +613,8 @@ class RandomForest():
         print('A5 Ground Bias',(np.sum(self.gediExtract[:,7]-self.use[:,0]))/self.use.shape[0])
         print('A6 Ground RMSE',sqrt(mean_squared_error(self.use[:,0],self.gediExtract[:,8])))
         print('A6 Ground Bias',(np.sum(self.gediExtract[:,8]-self.use[:,0]))/self.use.shape[0])
-        print('Original Ground Qual RMSE',sqrt(mean_squared_error(self.use[mask,0],self.gediExtract[mask,0])))
-        print('Original Ground Qual Bias',manualQualBias)
+        #print('Original Ground Qual RMSE',sqrt(mean_squared_error(self.use[mask,0],self.gediExtract[mask,0])))
+        #print('Original Ground Qual Bias',manualQualBias)
         print('New Ground RMSE',sqrt(mean_squared_error(self.use[self.test[0],0],newGround)))
         print('New Ground Bias',newGroundBias)
 

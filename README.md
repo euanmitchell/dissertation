@@ -36,8 +36,7 @@ Other packages may be required for certain programmes. The machine learning scri
 ### In the main folder:
 
 #### alsComp.py
-* Main Python script to read text file output from ```gediMetric``` and GEDI L2A HDF5 files and generate ground residual comparison plots and statistics. Once
-ALS and GEDI data arrays are sorted and matched they can be written to text files. The command line options available are:
+* Main Python script to read text file output from ```gediMetric``` and GEDI L2A HDF5 files and generate ground residual comparison plots and statistics. Once ALS and GEDI data arrays are sorted and matched they can be written to text files. The command line options available are:
   * --als - the path to a directory containing text file output from ```gediMetric```.
   * --alsFile - the path and filename for a single ```gediMetric``` text file.
   * --gedi - the path to a directory containing GEDI L2A data files.
@@ -90,6 +89,9 @@ ALS and GEDI data arrays are sorted and matched they can be written to text file
 
 #### parseJson.py
 * Python script to read the GeoJSON files produced by the NASA LP DAAC ```GEDISubsetter.py``` script and remove unnecessary datasets.
+
+#### plotComb.py
+* Reads the data files of sorted arrays output by ```alsComp.py``` and makes various combined plots.
 
 #### randomForest.py
 * First attempt to predict canopy height from Sentinel-2 image using Random Forest machine learning.

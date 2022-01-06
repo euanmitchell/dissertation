@@ -7,7 +7,7 @@
 import numpy as np
 from pyproj import Proj, transform
 
-inFile='/exports/csce/datastore/geos/groups/3d_env/data/ALS/lists/ground_bounds/alsBounds.nasa_laselva_2009.txt'
+inFile='../..//Dissertation/data/groundBounds.laselva2019_002.txt'
 
 minXArray=np.empty(0,dtype=float)
 minYArray=np.empty(0,dtype=float)
